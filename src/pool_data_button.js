@@ -256,24 +256,20 @@ var EC_POOL_DATA_BUTTON = {};
               console.log(`EC_POOL_DATA_BUTTON: Checking label "${cell_label}" against target "${target}"`);
               if (cell_label === target) {
                 const span = cells[1].querySelector("span");
-                let raw_text;
                 if (span) {
-                  raw_text = span.textContent.trim();
+                  let v = span.textContent.trim();
+                  // strip non-digits - THIS IS VERY EXTRACELLULAR-SPECIFIC CHANGE IF NEEDED
+                  if (!["cell id", "operator", "timestamp"].includes(target)) {
+                      v = clean_numeric_string(v);
+                  }
+                  found_val = v;
+                  console.log(`EC_POOL_DATA_BUTTON: Found value "${found_val}" for label "${label}"`);
+                  return true; // stop searching this row
                 } else {
-                  // if no <span> found, try to get the text directly from the cell
-                  raw_text = cells[1].textContent.trim();
+                  return false;
                 }
-                let v = raw_text;
-                // strip non-digits - THIS IS VERY EXTRACELLULAR-SPECIFIC CHANGE IF NEEDED
-                if (!["cell id", "operator"].includes(target)) {
-                    v = clean_numeric_string(v);
-                }
-                found_val = v;
-                console.log(`EC_POOL_DATA_BUTTON: Found value "${found_val}" for label "${label}"`);
-                return true; // stop searching this row
               }
             }
-            return false; // continue searching this row
           });
 
           // if not found yet, second pass: 2-row tables
@@ -296,7 +292,7 @@ var EC_POOL_DATA_BUTTON = {};
                       raw_text = val_cells[i].textContent.trim();
                     }
                     let v = raw_text;
-                    if (!["cell id", "operator"].includes(target)) {
+                    if (!["cell id", "operator", "timestamp"].includes(target)) {
                       v = clean_numeric_string(v);
                     }
                     console.log(`EC_POOL_DATA_BUTTON: Found value "${v}" for label "${label}" in 2-row table`);
