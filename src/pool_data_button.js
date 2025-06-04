@@ -7,6 +7,11 @@
 @author: Extracellular
 */
 
+/*!
+ * © 2025 Extracellular — released under the MIT License
+ * See LICENSE file for details.
+ */
+
 var EC_POOL_DATA_BUTTON = {};
 
 (function (context) {
@@ -133,6 +138,11 @@ var EC_POOL_DATA_BUTTON = {};
 
   // Preserve signs, dots and E/e for scientific notation
   function clean_numeric_string(s) {
+    console.log("EC_POOL_DATA_BUTTON: clean_numeric_string input:", s);
+    if (typeof s !== "string" || s.length === 0) {
+      console.warn("EC_POOL_DATA_BUTTON: clean_numeric_string called with non-string or empty input");
+      return "";
+    }
     return Array.from(s).filter(ch => /[0-9Ee\+\-\.]/.test(ch)).join("");
   }
 
@@ -246,15 +256,20 @@ var EC_POOL_DATA_BUTTON = {};
               console.log(`EC_POOL_DATA_BUTTON: Checking label "${cell_label}" against target "${target}"`);
               if (cell_label === target) {
                 const span = cells[1].querySelector("span");
+                let raw_text;
                 if (span) {
-                  let v = span.textContent.trim();
-                  // strip non-digits - THIS IS VERY EXTRACELLULAR-SPECIFIC CHANGE IF NEEDED
-                  if (!["cell id"].includes(target)) {
-                      v = clean_numeric_string(v);
-                  }
-                  found_val = v;
-                  console.log(`EC_POOL_DATA_BUTTON: Found value "${found_val}" for label "${label}"`);
+                  raw_text = span.textContent.trim();
+                } else {
+                  // if no <span> found, try to get the text directly from the cell
+                  raw_text = cells[1].textContent.trim();
                 }
+                let v = raw_text;
+                // strip non-digits - THIS IS VERY EXTRACELLULAR-SPECIFIC CHANGE IF NEEDED
+                if (!["cell id", "operator"].includes(target)) {
+                    v = clean_numeric_string(v);
+                }
+                found_val = v;
+                console.log(`EC_POOL_DATA_BUTTON: Found value "${found_val}" for label "${label}"`);
                 return true; // stop searching this row
               }
             }
@@ -273,14 +288,19 @@ var EC_POOL_DATA_BUTTON = {};
                   console.log(`EC_POOL_DATA_BUTTON: Checking header "${hdr}" against target "${target}"`);
                   if (hdr === target && i < val_cells.length) {
                     const span = val_cells[i].querySelector("span");
+                    let raw_text;
                     if (span) {
-                      let v = span.textContent.trim();
-                      if (!["cell id"].includes(target)) {
-                        v = clean_numeric_string(v);
-                      }
-                      console.log(`EC_POOL_DATA_BUTTON: Found value "${v}" for label "${label}" in 2-row table`);
-                      found_val = v;
+                      raw_text = span.textContent.trim();
+                    } else {
+                      // if no <span> found, try to get the text directly from the cell
+                      raw_text = val_cells[i].textContent.trim();
                     }
+                    let v = raw_text;
+                    if (!["cell id", "operator"].includes(target)) {
+                      v = clean_numeric_string(v);
+                    }
+                    console.log(`EC_POOL_DATA_BUTTON: Found value "${v}" for label "${label}" in 2-row table`);
+                    found_val = v;
                     return true; // break out of this table’s loop
                   }
                 }
